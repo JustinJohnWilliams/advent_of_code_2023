@@ -1,141 +1,114 @@
-using System.Xml;
-
-var sw = new System.Diagnostics.Stopwatch();
-sw.Start();
-
 Console.WriteLine($"*************Day 1 START*************");
 
-part_one();
-part_two();
+var p1 = part_one("input.txt"); // 55621
+var p2 = part_two("input.txt"); // 53592
 
-sw.Stop();
-Console.WriteLine($"*************Day 1 DONE*************");
-Console.WriteLine($"Time (ms): {sw.ElapsedMilliseconds} ms");
+Console.WriteLine($"Part 1 Result: {p1.result} \t: {p1.ms}ms");
+Console.WriteLine($"Part 2 Result: {p2.result} \t: {p2.ms}ms");
+Console.WriteLine($"*************Day 1  DONE*************");
 
-
-void part_one()
+(long result, double ms) part_one(string file)
 {
     var sw = new System.Diagnostics.Stopwatch();
     sw.Start();
 
-    var lines = File.ReadAllLines("input.txt");
+    var lines = File.ReadAllLines(file);
     var total = 0;
 
     foreach(var line in lines)
     {
-        var lineResult = "";
-
-        //Console.WriteLine(line);
-        for(int i = 0; i < line.Length; i++)
-        {
-            if(char.IsDigit(line[i]))
-            {
-                lineResult = line[i].ToString();
-                break;
-            }
-        }
-        for(int i = line.Length - 1; i >= 0; i--)
-        {
-            if(char.IsDigit(line[i]))
-            {
-                lineResult += line[i].ToString();
-                break;
-            }
-        }
-
-        if(string.IsNullOrEmpty(lineResult))
-        {
-            throw new Exception($"something fucked: {line}");
-        }
-
-        //Console.WriteLine(lineResult);
-        total += Convert.ToInt32(lineResult);
+        total += process_line(line);
     }
-
 
     sw.Stop();
 
-    Console.WriteLine($"*************Part 1 DONE*************");
-    Console.WriteLine($"Result: {total}");
-    Console.WriteLine($"Time (ms): {sw.ElapsedMilliseconds} ms");
+    return (total, sw.Elapsed.TotalMilliseconds);
 }
 
-void part_two()
+(long result, double ms) part_two(string file)
 {
     var sw = new System.Diagnostics.Stopwatch();
     sw.Start();
 
-    var lines = File.ReadAllLines("input.txt");
+    var lines = File.ReadAllLines(file);
     var total = 0;
-    //var lines = new List<string>{"6512krnnxdxzprbtlgcfoneeightwohfl"}; //6512182
 
     foreach(var line in lines)
     {
-        var lineResult = "";
-        var newLine = "";
-        for(int i = 0; i < line.Length; i++)
-        {
-            // is it already a digit
-            if(char.IsDigit(line[i]))
-            {
-                newLine += line[i];
-            }
+        var newLine = convert_words_to_numbers(line);
 
-            // skip if not letter
-            if(!char.IsLetter(line[i])) continue;
-
-            // if we parse a number from text append that number
-            for(int j = 1; j + i <= line.Length; j++)
-            {
-                var newThing = line.Substring(i, j);
-                if(newThing.IsNumber().isNumber)
-                {
-                    newLine += newThing.IsNumber().number;
-                    Console.WriteLine($"***new thing: {newThing}");
-                    Console.WriteLine($"i: {i}\tj: {j}");
-                    // manually manipulate i to skip ahead and then subtract the incrementor #sexy
-                    //i += j - 1;
-                }
-            }
-        }
-
-        for(int i = 0; i < newLine.Length; i++)
-        {
-            if(char.IsDigit(newLine[i]))
-            {
-                lineResult = newLine[i].ToString();
-                break;
-            }
-        }
-        for(int i = newLine.Length - 1; i >= 0; i--)
-        {
-            if(char.IsDigit(newLine[i]))
-            {
-                lineResult += newLine[i].ToString();
-                break;
-            }
-        }
-
-        if(string.IsNullOrEmpty(lineResult))
-        {
-            throw new Exception($"something fucked: {line}");
-        }
-
-        Console.WriteLine($"{line} : {newLine} : {lineResult}");
-
-        total += Convert.ToInt32(lineResult);
+        total += process_line(newLine);
     }
 
     sw.Stop();
-    Console.WriteLine($"*************Part 2 DONE*************"); // first result: 53650 53592
-    Console.WriteLine($"Result: {total}");
-    Console.WriteLine($"Time (ms): {sw.ElapsedMilliseconds} ms");
+
+    return (total, sw.Elapsed.TotalMilliseconds);
+}
+
+int process_line(string line)
+{
+    var lineResult = "";
+
+    for(int i = 0; i < line.Length; i++)
+    {
+        if(char.IsDigit(line[i]))
+        {
+            lineResult = line[i].ToString();
+            break;
+        }
+    }
+    for(int i = line.Length - 1; i >= 0; i--)
+    {
+        if(char.IsDigit(line[i]))
+        {
+            lineResult += line[i].ToString();
+            break;
+        }
+    }
+
+    if(string.IsNullOrEmpty(lineResult))
+    {
+        throw new Exception($"something fucked: {line}");
+    }
+
+    return Convert.ToInt32(lineResult);
+}
+
+string convert_words_to_numbers(string line)
+{
+    var newLine = "";
+    for(int i = 0; i < line.Length; i++)
+    {
+        // is it already a digit
+        if(char.IsDigit(line[i]))
+        {
+            newLine += line[i];
+        }
+
+        // skip if not letter
+        if(!char.IsLetter(line[i])) continue;
+
+        // if we parse a number from text append that number
+        for(int j = 1; j + i <= line.Length; j++)
+        {
+            var newThing = line.Substring(i, j);
+            if(newThing.Digitize().isNumber)
+            {
+                newLine += newThing.Digitize().value;
+                // manually manipulate i to skip ahead and then subtract the incrementor #sexy
+                //i += j - 1;
+            }
+        }
+    }
+
+    return newLine;
+
 }
 
 
 public static class Extentions
 {
-    public static (bool isNumber, int number) IsNumber(this string str)
+    public static (bool isNumber, int value) Digitize(this string str)
     {
         return str.ToLower() switch
         {

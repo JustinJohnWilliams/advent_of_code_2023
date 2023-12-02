@@ -1,25 +1,19 @@
-var sw = new System.Diagnostics.Stopwatch();
-sw.Start();
-
-Console.WriteLine($"*************Day 1 START*************");
+Console.WriteLine($"*************Day 2 START*************");
 
 var p1 = part_one("input.txt");
 var p2 = part_two("input.txt");
 
-sw.Stop();
-
 Console.WriteLine($"Part 1 Result: {p1.result} \t: {p1.ms}ms");
 Console.WriteLine($"Part 2 Result: {p2.result} \t: {p2.ms}ms");
-Console.WriteLine($"Time (total)\t\t: {sw.ElapsedMilliseconds}ms");
-Console.WriteLine($"*************Day 1 DONE*************");
+Console.WriteLine($"*************Day 2  DONE*************");
 
-(int result, long ms) part_one(string file)
+(long result, double ms) part_one(string file)
 {
     var sw = new System.Diagnostics.Stopwatch();
     sw.Start();
 
     var lines = File.ReadAllLines(file);
-    var total = 0;
+    long total = 0;
 
     foreach(var line in lines)
     {
@@ -29,10 +23,10 @@ Console.WriteLine($"*************Day 1 DONE*************");
 
     sw.Stop();
 
-    return (total, sw.ElapsedMilliseconds);
+    return (total, sw.Elapsed.TotalMilliseconds);
 }
 
-(int id, bool isValid) process_line(string line)
+(long id, bool isValid) process_line(string line)
 {
     var isValid = true;
 
@@ -59,7 +53,6 @@ Console.WriteLine($"*************Day 1 DONE*************");
 
         if(r > 12 || g > 13 || b > 14)
         {
-            Console.WriteLine($"{id} is invalid");
             isValid = false;
             break;
         }
@@ -69,7 +62,7 @@ Console.WriteLine($"*************Day 1 DONE*************");
 
 }
 
-(int result, long ms) part_two(string file)
+(int result, double ms) part_two(string file)
 {
     var sw = new System.Diagnostics.Stopwatch();
     sw.Start();
@@ -85,7 +78,7 @@ Console.WriteLine($"*************Day 1 DONE*************");
 
     sw.Stop();
 
-    return (total, sw.ElapsedMilliseconds);
+    return (total, sw.Elapsed.TotalMilliseconds);
 }
 
 (int id, int power_rgb) process_line_two(string line)

@@ -36,16 +36,58 @@ Console.WriteLine($"*************Day 8  DONE*************");
     return (total, sw.Elapsed.TotalMilliseconds);
 }
 
-(int result, double ms) part_two(string file)
+(long result, double ms) part_two(string file)
 {
     var sw = new System.Diagnostics.Stopwatch();
     sw.Start();
 
-    var total = 0;
+    var lines = File.ReadAllLines(file);
+
+    var directions = lines[0];
+    var nodes = parse_nodes(lines);
+
+    var starting_nodes = nodes.Keys.Where(c => c.EndsWith('A'));
+    var results = starting_nodes.ToDictionary(c => c, v => 0);
+
+    foreach(var node in starting_nodes)
+    {
+        var result = "";
+        var total = 0;
+        int i = 0;
+        do
+        {
+            var direction = directions[i];
+            var n = total == 0 ? nodes[node] : nodes[result];
+            result = traverse_node(nodes, direction, n);
+            i = i == directions.Length - 1 ? 0 : i + 1;
+            total++;
+            results[node] = total;
+        }while(!result.EndsWith('Z'));
+    }
+
+    var lcm = (long)results.Values.First();
+
+    foreach(var result in results)
+    {
+        var x = lcm;
+        lcm = LCM(lcm, result.Value);
+    }
 
     sw.Stop();
 
-    return (total, sw.Elapsed.TotalMilliseconds);
+    return (lcm, sw.Elapsed.TotalMilliseconds);
+}
+
+// hot damn this is cool. thanks luke!
+long LCM(long a, long b) => a * b / GCF(a, b);
+long GCF(long a, long b) => b == 0 ? a : GCF(b, a % b);
+
+
+string traverse_node(Dictionary<string, Tuple<string, string>> nodes, char direction, Tuple<string, string> node)
+{
+    var result = direction == 'L' ? node.Item1 : node.Item2;
+
+    return result;
 }
 
 Dictionary<string, Tuple<string, string>> parse_nodes(string[] instructions)

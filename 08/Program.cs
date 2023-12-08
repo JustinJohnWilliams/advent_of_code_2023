@@ -25,8 +25,8 @@ Console.WriteLine($"*************Day 8  DONE*************");
     do
     {
         var direction = directions[i];
-        var node = total == 0 ? nodes.First(c => c.Key == "AAA").Value : nodes[result];
-        result = direction == 'L' ? node.Item1 : node.Item2;
+        var (left, right) = total == 0 ? nodes.First(c => c.Key == "AAA").Value : nodes[result];
+        result = direction == 'L' ? left : right;
         i = i == directions.Length - 1 ? 0 : i + 1;
         total++;
     }while(result != goal);
@@ -57,8 +57,8 @@ Console.WriteLine($"*************Day 8  DONE*************");
         do
         {
             var direction = directions[i];
-            var n = total == 0 ? nodes[node] : nodes[result];
-            result = traverse_node(nodes, direction, n);
+            var (left, right) = total == 0 ? nodes[node] : nodes[result];
+            result = direction == 'L' ? left : right;
             i = i == directions.Length - 1 ? 0 : i + 1;
             total++;
             results[node] = total;
@@ -82,27 +82,41 @@ Console.WriteLine($"*************Day 8  DONE*************");
 long LCM(long a, long b) => a * b / GCF(a, b);
 long GCF(long a, long b) => b == 0 ? a : GCF(b, a % b);
 
-
-string traverse_node(Dictionary<string, Tuple<string, string>> nodes, char direction, Tuple<string, string> node)
+Dictionary<string, (string left, string right)> parse_nodes(string[] instructions)
 {
-    var result = direction == 'L' ? node.Item1 : node.Item2;
-
-    return result;
-}
-
-Dictionary<string, Tuple<string, string>> parse_nodes(string[] instructions)
-{
-    var results = new Dictionary<string, Tuple<string, string>>();
+    var results = new Dictionary<string, (string, string)>();
 
     foreach(var instruction in instructions)
     {
         if(string.IsNullOrEmpty(instruction) || !instruction.Contains('=')) continue;
 
-        var node = instruction.Split("=", StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-        var edges = instruction.Split("=", StringSplitOptions.RemoveEmptyEntries)[1].Trim([' ', '(', ')']).Split(",", StringSplitOptions.RemoveEmptyEntries);
+        var node = instruction.SplitAndRemove("=")[0].Trim();
+        var edges = instruction.SplitAndRemove("=")[1].Trim([' ', '(', ')']).SplitAndRemove(",");
 
-        results.Add(node, new Tuple<string, string>(edges[0].Trim(), edges[1].Trim()));
+        results.Add(node, (edges[0].Trim(), edges[1].Trim()));
     }
 
     return results;
 }
+
+public static class Extensions
+{
+    public static string[] SplitAndRemove(this string obj, string? separator, StringSplitOptions opts = StringSplitOptions.RemoveEmptyEntries)
+    {
+        return obj.Split(separator, opts);
+    }
+}
+
+/*
+30 (L) - SLA: 11653
+30 (L) - AAA: 19783
+30 (L) - LVA: 19241
+30 (L) - NPA: 16531
+30 (L) - GDA: 12737
+30 (L) - RCA: 14363
+
+11653,19783,19241,16531,12737,14363
+GCF => 271
+
+LCM(271,11653,19783,19241,16531,12737,14363) => 9177460370549
+*/

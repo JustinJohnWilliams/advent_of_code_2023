@@ -11,8 +11,8 @@ var p2 = part_two("input.txt");
 sw.Stop();
 
 Console.WriteLine($"Part 1 Result: {p1.result} \t: {p1.ms}ms");
-Console.WriteLine($"Part 2 Result: {p2.result} \t: {p2.ms}ms");
-Console.WriteLine($"Time (total)\t\t: {sw.Elapsed.TotalMilliseconds}ms");
+Console.WriteLine($"Part 2 Result: {p2.result} \t\t: {p2.ms}ms");
+Console.WriteLine($"Time (total)\t\t\t: {sw.Elapsed.TotalMilliseconds}ms");
 Console.WriteLine($"*************Day 9  DONE*************");
 
 (long result, double ms) part_one(string file)
@@ -52,8 +52,23 @@ List<int> reduce(List<int> set)
     var sw = new System.Diagnostics.Stopwatch();
     sw.Start();
 
-    var lines = File.ReadAllLines(file);
     var total = 0;
+    var measurements = get_measurements(file);
+    for(int i = 0; i < measurements.Count(); i++)
+    {
+        var reducedSet = measurements[i];
+        var history = new List<int>();
+        while(!reducedSet.IsReduced())
+        {
+            history.Add(reducedSet.First());
+            reducedSet = reduce(reducedSet);
+        }
+
+        history.Add(0);
+        history.Reverse();
+
+        total += history.Aggregate((a, b) => b - a);
+    }
 
     sw.Stop();
     

@@ -3,7 +3,7 @@ Console.WriteLine($"*************Day 18 START*************");
 var p1 = part_one("input.txt");
 var p2 = part_two("input.txt");
 
-Console.WriteLine($"Part 1 Result: {p1.result} \t: {p1.ms}ms");
+Console.WriteLine($"Part 1 Result: {p1.result} \t\t: {p1.ms}ms");
 Console.WriteLine($"Part 2 Result: {p2.result} \t: {p2.ms}ms");
 Console.WriteLine($"*************Day 18  DONE*************");
 
@@ -16,7 +16,7 @@ Console.WriteLine($"*************Day 18  DONE*************");
     var points = get_points(lines);
     var sArea = get_shoelace_area(points);
     var sPerimeter = get_perimeter(points);
-    var area = Convert.ToInt32(sArea + (sPerimeter / 2) + 1);
+    var area = Convert.ToInt64(sArea + (sPerimeter / 2) + 1);
 
     sw.Stop();
     
@@ -30,23 +30,27 @@ Console.WriteLine($"*************Day 18  DONE*************");
     sw.Start();
 
     var lines = File.ReadAllLines(file);
-    var total = 0;
+    var points = get_points(lines, true);
+    var sArea = get_shoelace_area(points);
+    var sPerimeter = get_perimeter(points);
+    var area = Convert.ToInt64(sArea + (sPerimeter / 2) + 1);
 
     sw.Stop();
     
-    return (total, sw.Elapsed.TotalMilliseconds);
+    return (area, sw.Elapsed.TotalMilliseconds);
 }
 
-List<(int x, int y)> get_points(string[] lines)
+List<(long x, long y)> get_points(string[] lines, bool elfScrewUp = false)
 {
-    (int x, int y) digger = (0, 0);
-    var points = new List<(int x, int y)>{ digger };
+    (long x, long y) digger = (0, 0);
+    var points = new List<(long x, long y)>{ digger };
 
     foreach(var x in lines)
     {
-        var direction = x.Split(' ')[0];
-        var distance = Convert.ToInt32(x.Split(' ')[1]);
         var color = x.Split(' ')[2].Trim(['(', ')', '#']);
+
+        var direction = elfScrewUp ? color.extract_direction() : x.Split(' ')[0];
+        var distance = elfScrewUp ? color.extract_distance() : Convert.ToInt64(x.Split(' ')[1]);
         digger = digger.move(direction, distance);
 
         points.Add(digger);
@@ -55,7 +59,7 @@ List<(int x, int y)> get_points(string[] lines)
     return points;
 }
 
-double get_shoelace_area(List<(int x, int y)> points)
+double get_shoelace_area(List<(long x, long y)> points)
 {
     var v = points.Count;
     var a = 0.0;
@@ -67,7 +71,7 @@ double get_shoelace_area(List<(int x, int y)> points)
     return Math.Abs(a / 2.0);
 }
 
-double get_perimeter(List<(int x, int y)> points)
+double get_perimeter(List<(long x, long y)> points)
 {
     var v = points.Count;
     var p = 0.0;
@@ -81,7 +85,7 @@ double get_perimeter(List<(int x, int y)> points)
 
 public static class Extensions
 {
-    public static (int x, int y) move(this (int x, int y) point, string direction, int distance)
+    public static (long x, long y) move(this (long x, long y) point, string direction, long distance)
     {
         return direction switch
         {
@@ -91,5 +95,22 @@ public static class Extensions
             "D" => (point.x, point.y - distance),
             _ => throw new Exception($"{direction} bad")
         };
+    }
+
+    public static string extract_direction(this string str)
+    {
+        return str.Last() switch
+        {
+            '0' => "R",
+            '1' => "D",
+            '2' => "L",
+            '3' => "U",
+            _ => throw new Exception($"{str.Last()} bad")
+        };
+    }
+
+    public static long extract_distance(this string str)
+    {
+        return Convert.ToInt64(str[..^1], 16);
     }
 }

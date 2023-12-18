@@ -10,12 +10,14 @@ Console.WriteLine($"*************Day 18  DONE*************");
 (long result, double ms) part_one(string file)
 {
     var sw = new System.Diagnostics.Stopwatch();
-    sw.Start();
 
     var lines = File.ReadAllLines(file);
+    sw.Start();
+
     var points = get_points(lines);
-    var sArea = get_shoelace_area(points);
-    var sPerimeter = get_perimeter(points);
+    var sArea = calc_shoelace_area(points);
+    var sPerimeter = calc_shoelace_perimeter(points);
+    // Pick's Theorem
     var area = Convert.ToInt64(sArea + (sPerimeter / 2) + 1);
 
     sw.Stop();
@@ -27,12 +29,13 @@ Console.WriteLine($"*************Day 18  DONE*************");
 (long result, double ms) part_two(string file)
 {
     var sw = new System.Diagnostics.Stopwatch();
-    sw.Start();
 
     var lines = File.ReadAllLines(file);
+    sw.Start();
+
     var points = get_points(lines, true);
-    var sArea = get_shoelace_area(points);
-    var sPerimeter = get_perimeter(points);
+    var sArea = calc_shoelace_area(points);
+    var sPerimeter = calc_shoelace_perimeter(points);
     var area = Convert.ToInt64(sArea + (sPerimeter / 2) + 1);
 
     sw.Stop();
@@ -59,28 +62,20 @@ List<(long x, long y)> get_points(string[] lines, bool elfScrewUp = false)
     return points;
 }
 
-double get_shoelace_area(List<(long x, long y)> points)
+double calc_shoelace_area(List<(long x, long y)> points)
 {
-    var v = points.Count;
-    var a = 0.0;
-    for(int i = 0; i < v - 1; i++)
-    {
-        a += points[i].x * points[i + 1].y - points[i + 1].x * points[i].y;
-    }
-
-    return Math.Abs(a / 2.0);
+    return Math.Abs(
+        Enumerable.Range(0, points.Count - 1)
+            .Aggregate(0L, (acc, i) =>
+                acc + points[i].x * points[i + 1].y  - points[i + 1].x * points[i].y)
+        / 2.0);
 }
 
-double get_perimeter(List<(long x, long y)> points)
+double calc_shoelace_perimeter(List<(long x, long y)> points)
 {
-    var v = points.Count;
-    var p = 0.0;
-    for(int i = 0; i < v - 1; i++)
-    {
-        p += Math.Sqrt(Math.Pow(points[i + 1].x - points[i].x, 2) + Math.Pow(points[i + 1].y - points[i].y, 2));
-    }
-
-    return p;
+    return Enumerable.Range(0, points.Count - 1)
+        .Aggregate(0.0, (acc, i) =>
+            acc + Math.Sqrt(Math.Pow(points[i + 1].x - points[i].x, 2) + Math.Pow(points[i + 1].y - points[i].y, 2)));
 }
 
 public static class Extensions

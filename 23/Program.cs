@@ -21,7 +21,7 @@ Console.WriteLine($"*************Day 23  DONE*************");
     var xi = 0;
     var yi = Array.IndexOf(lines[0].ToCharArray(), '.');
 
-    result = find_longest_hike(xi, yi, map, visitedNodes, 0) - 1;
+    result = find_longest_hike(xi, yi, map, visitedNodes, 0, []) - 1;
     
     sw.Stop();
     
@@ -35,6 +35,14 @@ Console.WriteLine($"*************Day 23  DONE*************");
     var lines = File.ReadAllLines(file);
     var result = 0L;
     sw.Start();
+
+    var map = create_map(lines);
+    var visitedNodes = new bool[map.GetLength(0), map.GetLength(1)];
+    
+    var xi = 0;
+    var yi = Array.IndexOf(lines[0].ToCharArray(), '.');
+
+    result = find_longest_hike(xi, yi, map, visitedNodes, 0, [], false) - 1;
 
     sw.Stop();
     
@@ -64,27 +72,44 @@ bool is_valid_step(int x, int y, char[,] map, bool[,] visited)
     return true;
 }
 
-int find_longest_hike(int x, int y, char[,] map, bool[,] visited, int currentLength)
+int find_longest_hike(int x, int y, char[,] map, bool[,] visited, int currentLength, Dictionary<(int, int), int> memo, bool considerSlopes = true)
 {
     if(!is_valid_step(x, y, map, visited)) return currentLength;
+
+    if (memo.TryGetValue((x, y), out int memoizedResult))
+        return memoizedResult + currentLength;
 
     visited[x,y] = true;
     var lengthToBeat = currentLength;
 
-    lengthToBeat = map[x, y] switch
+    if(considerSlopes)
     {
-        '^' => Math.Max(lengthToBeat, find_longest_hike(x - 1, y, map, visited, currentLength + 1)),
-        '>' => Math.Max(lengthToBeat, find_longest_hike(x, y + 1, map, visited, currentLength + 1)),
-        'v' => Math.Max(lengthToBeat, find_longest_hike(x + 1, y, map, visited, currentLength + 1)),
-        '<' => Math.Max(lengthToBeat, find_longest_hike(x, y - 1, map, visited, currentLength + 1)),
-        _ => new[] {
-            find_longest_hike(x - 1, y, map, visited, currentLength + 1),
-            find_longest_hike(x, y + 1, map, visited, currentLength + 1),
-            find_longest_hike(x + 1, y, map, visited, currentLength + 1),
-            find_longest_hike(x, y - 1, map, visited, currentLength + 1)
-        }.Max()
-    };
+        lengthToBeat = map[x, y] switch
+        {
+            '^' => Math.Max(lengthToBeat, find_longest_hike(x - 1, y, map, visited, currentLength + 1, memo)),
+            '>' => Math.Max(lengthToBeat, find_longest_hike(x, y + 1, map, visited, currentLength + 1, memo)),
+            'v' => Math.Max(lengthToBeat, find_longest_hike(x + 1, y, map, visited, currentLength + 1, memo)),
+            '<' => Math.Max(lengthToBeat, find_longest_hike(x, y - 1, map, visited, currentLength + 1, memo)),
+            _ => new[] {
+                find_longest_hike(x - 1, y, map, visited, currentLength + 1, memo),
+                find_longest_hike(x, y + 1, map, visited, currentLength + 1, memo),
+                find_longest_hike(x + 1, y, map, visited, currentLength + 1, memo),
+                find_longest_hike(x, y - 1, map, visited, currentLength + 1, memo)
+            }.Max()
+        };
+    }
+    else
+    {
+        lengthToBeat =
+             new[] {
+                find_longest_hike(x - 1, y, map, visited, currentLength + 1, memo, false),
+                find_longest_hike(x, y + 1, map, visited, currentLength + 1, memo, false),
+                find_longest_hike(x + 1, y, map, visited, currentLength + 1, memo, false),
+                find_longest_hike(x, y - 1, map, visited, currentLength + 1, memo, false)
+            }.Max();
+    }
 
     visited[x,y] = false;
+    memo[(x, y)] = lengthToBeat - currentLength;
     return lengthToBeat;
 }
